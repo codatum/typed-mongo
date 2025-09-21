@@ -1,0 +1,67 @@
+{
+  "name": "typed-mongo",
+  "version": "1.0.0",
+  "description": "A minimal, strongly-typed wrapper for the MongoDB Node.js driver.",
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    }
+  },
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "pnpm run clean && tsup",
+    "dev": "concurrently \"tsup --watch\" \"tsc -p tsconfig.build.json --emitDeclarationOnly --declaration --watch\"",
+    "test": "vitest run --typecheck",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage",
+    "lint": "biome check .",
+    "lint:fix": "biome check --apply .",
+    "typecheck": "tsc --noEmit",
+    "clean:all": "pnpm run clean && rm -rf node_modules .turbo",
+    "clean": "rm -rf dist"
+  },
+  "keywords": [
+    "mongodb",
+    "typescript",
+    "schema",
+    "validation",
+    "type-safe",
+    "database"
+  ],
+  "author": "tmonoi",
+  "license": "MIT",
+  "engines": {
+    "node": ">=20.0.0"
+  },
+  "peerDependencies": {
+    "mongodb": "^6.0.0"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "^1.4.1",
+    "@types/node": "^20.10.0",
+    "concurrently": "^9.1.0",
+    "mongodb": "^6.19.0",
+    "mongodb-memory-server": "^9.1.4",
+    "tsup": "^8.0.1",
+    "typescript": "^5.3.3",
+    "vitest": "^1.1.0",
+    "zod": "^3.25.76"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/codatum/typed-mongo.git",
+    "directory": "packages/core"
+  },
+  "bugs": {
+    "url": "https://github.com/codatum/typed-mongo/issues"
+  },
+  "homepage": "https://github.com/codatum/typed-mongo#readme"
+}
