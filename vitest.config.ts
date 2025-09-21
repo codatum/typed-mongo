@@ -6,6 +6,13 @@ export default defineConfig({
     environment: 'node',
     include: ['tests/**/*.test.ts'],
     setupFiles: ['./tests/setup/mongodb-memory-server.ts'],
+    // avoid lock file error in CI for mongodb-memory-server
+    pool: 'forks',
+    poolOptions: {
+      forks: {
+        singleFork: process.env.CI === 'true',
+      },
+    },
     coverage: {
       provider: 'v8',
       reporter: ['text', 'json', 'html'],
