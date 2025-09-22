@@ -8,10 +8,11 @@
 
 ## Features
 
+- 🔄 Extremely thin wrapper around the MongoDB Node.js driver
 - 🎯 Smart type inference
 - 🔄 No custom schema definitions required
-- 📝 Declarative index creation
 - ⚡ Superior performance
+- 📝 Declarative index creation
 
 ## Installation
 
@@ -23,17 +24,15 @@ pnpm add typed-mongo
 yarn add typed-mongo
 ```
 
-## Usage
-
-### Basic Usage
+## Basic Usage
 
 ```typescript
-import { MongoClient } from 'mongodb';
+import { MongoClient, ObjectId } from 'mongodb';
 import { Client } from 'typed-mongo';
 
 // Define your schema
 type UserSchema = {
-  _id: string;
+  _id: ObjectId;
   name: string;
   age: number;
   email?: string;
@@ -54,80 +53,24 @@ const client = Client.initialize(db);
 // Create a type-safe model
 const User = client.model<UserSchema>('users');
 
-// Insert documents
+// Insert a document with type-safe
 await User.insertOne({
-  _id: 'user1',
   name: 'Alice',
   age: 25,
   email: 'alice@example.com'
 });
 
-// Type-safe queries
-const user = await User.findOne({ name: 'Alice' });
 // user is typed as UserSchema | null
+const user = await User.findOne({ name: 'Alice' });
 
-// Query nested properties
-const userWithBio = await User.findOne({ 
-  'profile.bio': 'Developer' 
-});
+// usersWithProjection is typed as { name: string; }[]
+const usersWithProjection = await User.findMany(
+  {},
+  { projection: { _id: 0, name: 1 } }
+);
 ```
 
-### Type Inference from Zod
-
-```typescript
-import { z } from 'zod';
-import { Client } from 'typed-mongo';
-
-// Define Zod schema
-const UserSchema = z.object({
-  _id: z.string(),
-  name: z.string(),
-  age: z.number(),
-  email: z.string().email().optional(),
-  tags: z.array(z.string()).optional(),
-  profile: z.object({
-    bio: z.string(),
-    avatar: z.string().optional()
-  }).optional()
-});
-
-// Infer type from Zod
-type User = z.infer<typeof UserSchema>;
-
-// Create model
-const User = client.model<User>('users');
-
-// Fully type-safe operations
-await User.insertOne({
-  _id: 'user1',
-  name: 'Bob',
-  age: 30,
-  email: 'bob@example.com', // Type follows Zod validation
-  tags: ['developer', 'typescript']
-});
-```
-
-### Integration with Valibot and Other Libraries
-
-```typescript
-import * as v from 'valibot';
-
-// Valibot schema
-const UserSchema = v.object({
-  _id: v.string(),
-  name: v.string(),
-  age: v.number(),
-  email: v.optional(v.string()),
-});
-
-// Infer type
-type User = v.InferOutput<typeof UserSchema>;
-
-// Create model
-const User = client.model<User>('users');
-```
-
-### Type Error Examples
+## Type Error Examples
 
 TypeScript will catch these errors at compile time:
 
@@ -151,53 +94,6 @@ await User.insertOne({
   age: 25
 });
 // Error: Property 'name' is missing
-```
-
-### Projection Type Inference
-
-```typescript
-// Return type automatically adjusts based on projection
-const userWithNameOnly = await User.findOne(
-  { _id: 'user1' },
-  { projection: { name: 1, _id: 0 } }
-);
-// userWithNameOnly is typed as { name: string } | null
-
-const userWithProfile = await User.findOne(
-  { _id: 'user1' },
-  { projection: { name: 1, profile: 1 } }
-);
-// userWithProfile is typed as { _id: string; name: string; profile?: { bio: string; avatar?: string } } | null
-```
-
-### Advanced Update Operations
-
-```typescript
-// Type-safe update operations
-await User.updateOne(
-  { _id: 'user1' },
-  {
-    $set: { 
-      age: 26,
-      'profile.bio': 'Senior Developer' // Update nested fields
-    },
-    $push: { 
-      tags: 'mongodb' 
-    },
-    $inc: { 
-      age: 1 
-    }
-  }
-);
-
-// Array operations
-await User.updateMany(
-  { tags: 'developer' },
-  {
-    $pull: { tags: 'junior' },
-    $addToSet: { tags: 'senior' }
-  }
-);
 ```
 
 ## API Reference
