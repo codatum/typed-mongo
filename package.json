@@ -1,6 +1,6 @@
 {
   "name": "typed-mongo",
-  "version": "1.0.0",
+  "version": "0.0.1",
   "description": "A minimal, strongly-typed wrapper for the MongoDB Node.js driver.",
   "type": "module",
   "exports": {
