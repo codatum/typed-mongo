@@ -48,11 +48,16 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/codatum/typed-mongo.git",
-    "directory": "packages/core"
+    "url": "git+https://github.com/codatum/typed-mongo.git"
   },
   "bugs": {
     "url": "https://github.com/codatum/typed-mongo/issues"
   },
-  "homepage": "https://github.com/codatum/typed-mongo#readme"
+  "homepage": "https://github.com/codatum/typed-mongo#readme",
+  "sideEffects": false,
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org/",
+    "provenance": true
+  }
 }
