@@ -15,7 +15,7 @@ jobs:
       id-token: write
     steps:
       - name: Checkout repository
-        uses: actions/checkout@5
+        uses: actions/checkout@v5
         with:
           fetch-depth: 1
       - name: Claude Code
