@@ -1,6 +1,6 @@
 {
   "name": "typed-mongo",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "A minimal, strongly-typed wrapper for the MongoDB Node.js driver.",
   "type": "module",
   "exports": {
@@ -13,7 +13,9 @@
   "main": "./dist/index.cjs",
   "module": "./dist/index.js",
   "types": "./dist/index.d.ts",
-  "files": ["dist"],
+  "files": [
+    "dist"
+  ],
   "scripts": {
     "build": "pnpm run clean && tsup",
     "dev": "concurrently \"tsup --watch\" \"tsc -p tsconfig.build.json --emitDeclarationOnly --declaration --watch\"",
@@ -26,7 +28,14 @@
     "clean:all": "pnpm run clean && rm -rf node_modules .turbo",
     "clean": "rm -rf dist"
   },
-  "keywords": ["mongodb", "typescript", "schema", "validation", "type-safe", "database"],
+  "keywords": [
+    "mongodb",
+    "typescript",
+    "schema",
+    "validation",
+    "type-safe",
+    "database"
+  ],
   "author": "tmonoi",
   "license": "MIT",
   "engines": {
