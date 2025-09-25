@@ -28,7 +28,7 @@ yarn add typed-mongo
 
 ```typescript
 import { MongoClient, ObjectId } from 'mongodb';
-import { Client } from 'typed-mongo';
+import { TypedMongo } from 'typed-mongo';
 
 // Define your schema
 type UserSchema = {
@@ -47,11 +47,11 @@ const mongoClient = new MongoClient('mongodb://localhost:27017');
 await mongoClient.connect();
 const db = mongoClient.db('myapp');
 
-// Initialize typed-mongo client
-const client = Client.initialize(db);
+// Initialize typed-mongo
+const typedMongo = TypedMongo.initialize(db);
 
 // Create a type-safe model
-const User = client.model<UserSchema>('users');
+const User = typedMongo.model<UserSchema>('users');
 
 // Insert a document with type-safe
 await User.insertOne({
@@ -98,10 +98,10 @@ await User.insertOne({
 
 ## API Reference
 
-### Client
+### TypedMongo
 
 ```typescript
-const client = Client.initialize(db: Db, mongoClient?: MongoClient);
+const typedMongo = TypedMongo.initialize(db: Db, mongoClient?: MongoClient);
 ```
 
 ### Model
