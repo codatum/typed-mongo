@@ -1,6 +1,6 @@
 # typed-mongo
 
-[![CI](https://github.com/codatum/typed-mongo/actions/workflows/ci.yaml/badge.svg)](https://github.com/codatum/typed-mongo/actions/workflows/ci.yaml)
+[![CI](https://github.com/codatum/typed-mongo/actions/workflows/ci.yml/badge.svg)](https://github.com/codatum/typed-mongo/actions/workflows/ci.yml)
 [![npm version](https://badge.fury.io/js/typed-mongo.svg)](https://badge.fury.io/js/typed-mongo)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
