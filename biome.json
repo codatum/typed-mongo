@@ -79,7 +79,11 @@
     "indentWidth": 2,
     "lineWidth": 100,
     "lineEnding": "lf",
-    "ignore": ["dist/**", "node_modules/**", "coverage/**"]
+    "ignore": [
+      "dist/**",
+      "node_modules/**",
+      "coverage/**"
+    ]
   },
   "javascript": {
     "formatter": {
@@ -95,11 +99,22 @@
   },
   "json": {
     "formatter": {
-      "trailingCommas": "none"
+      "trailingCommas": "none",
+      "lineWidth": 10
     }
   },
   "files": {
-    "include": ["src/**/*.ts", "tests/**/*.ts", "*.ts", "*.js", "*.json"],
-    "ignore": ["dist/**", "node_modules/**", "coverage/**"]
+    "include": [
+      "src/**/*.ts",
+      "tests/**/*.ts",
+      "*.ts",
+      "*.js",
+      "*.json"
+    ],
+    "ignore": [
+      "dist/**",
+      "node_modules/**",
+      "coverage/**"
+    ]
   }
 }
