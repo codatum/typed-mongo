@@ -10,7 +10,7 @@ import {
   test,
 } from 'vitest';
 import { z } from 'zod';
-import { Client } from '../src/index.js';
+import { TypedMongo } from '../src/index.js';
 import type { Model } from '../src/model.js';
 import { testDbManager } from './setup/mongodb-memory-server.js';
 
@@ -73,15 +73,15 @@ type UserSchema = z.infer<typeof userSchema>;
 type PostSchema = z.infer<typeof postSchema>;
 
 describe('Type checking tests', () => {
-  let client: Client;
+  let typedMongo: TypedMongo;
   let User: Model<UserSchema>;
   let Post: Model<PostSchema>;
 
   beforeAll(async () => {
     const testDb = testDbManager.getDb();
-    client = Client.initialize(testDb);
-    User = client.model<UserSchema>('users');
-    Post = client.model<PostSchema>('posts');
+    typedMongo = TypedMongo.initialize(testDb);
+    User = typedMongo.model<UserSchema>('users');
+    Post = typedMongo.model<PostSchema>('posts');
   });
 
   const testUser1 = {

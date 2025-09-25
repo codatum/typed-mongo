@@ -4,7 +4,7 @@ import { type BulkWriteResult, ObjectId } from 'mongodb';
  * This file is tested with: pnpm test --typecheck
  */
 import { describe, expectTypeOf, test } from 'vitest';
-import { Client } from '../src/index.js';
+import { TypedMongo } from '../src/index.js';
 import type { Model } from '../src/model.js';
 import { testDbManager } from './setup/mongodb-memory-server.js';
 
@@ -53,10 +53,10 @@ type PostSchema = {
 };
 
 const testDb = testDbManager.getDb();
-const client = Client.initialize(testDb);
+const typedMongo = TypedMongo.initialize(testDb);
 
-const User = client.model<UserSchema>('users');
-const Post = client.model<PostSchema>('posts');
+const User = typedMongo.model<UserSchema>('users');
+const Post = typedMongo.model<PostSchema>('posts');
 
 describe('Type checking tests', () => {
   test('Model type inference', () => {

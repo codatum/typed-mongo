@@ -1,7 +1,7 @@
 import type { Document, ObjectId } from 'mongodb';
 import { ObjectId as MongoObjectId } from 'mongodb';
 import { beforeEach, describe, expect, test } from 'vitest';
-import { Client } from '../src/index.js';
+import { TypedMongo } from '../src/index.js';
 import type { Model } from '../src/model.js';
 import { testDbManager } from './setup/mongodb-memory-server.js';
 
@@ -50,13 +50,13 @@ type PostSchema = {
 };
 
 describe('typed-mongo Integration Tests', () => {
-  let client: Client;
+  let typedMongo: TypedMongo;
   let User: Model<UserSchema>;
   let Post: Model<PostSchema>;
 
   beforeEach(async () => {
     const testDb = testDbManager.getDb();
-    client = Client.initialize(testDb);
+    typedMongo = TypedMongo.initialize(testDb);
 
     // Clear collections before each test
     const collections = await testDb.listCollections().toArray();
@@ -65,8 +65,8 @@ describe('typed-mongo Integration Tests', () => {
     }
 
     // Initialize models
-    User = client.model<UserSchema>('users');
-    Post = client.model<PostSchema>('posts');
+    User = typedMongo.model<UserSchema>('users');
+    Post = typedMongo.model<PostSchema>('posts');
   });
 
   describe('insertOne', () => {
@@ -1312,16 +1312,16 @@ describe('typed-mongo Integration Tests', () => {
     });
   });
 
-  describe('Client operations', () => {
+  describe('TypedMongo operations', () => {
     test('should get database instance', () => {
-      const db = client.getDb();
+      const db = typedMongo.getDb();
       expect(db).toBeDefined();
       expect(db.databaseName).toBeDefined();
     });
 
     test('should create multiple models', () => {
-      const model1 = client.model<UserSchema>('collection1');
-      const model2 = client.model<PostSchema>('collection2');
+      const model1 = typedMongo.model<UserSchema>('collection1');
+      const model2 = typedMongo.model<PostSchema>('collection2');
 
       expect(model1).toBeDefined();
       expect(model2).toBeDefined();
@@ -1347,7 +1347,7 @@ describe('typed-mongo Integration Tests', () => {
         email: string; // Required
       }
 
-      const StrictUserModel = client.model<StrictUser>('strict_users');
+      const StrictUserModel = typedMongo.model<StrictUser>('strict_users');
 
       // This should work
       await StrictUserModel.insertOne({
