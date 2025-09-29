@@ -79,7 +79,7 @@ describe('Type checking tests', () => {
 
   beforeAll(async () => {
     const testDb = testDbManager.getDb();
-    typedMongo = TypedMongo.initialize(testDb);
+    typedMongo = new TypedMongo(testDb);
     User = typedMongo.model<UserSchema>('users');
     Post = typedMongo.model<PostSchema>('posts');
   });

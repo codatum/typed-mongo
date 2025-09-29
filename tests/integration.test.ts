@@ -56,7 +56,7 @@ describe('typed-mongo Integration Tests', () => {
 
   beforeEach(async () => {
     const testDb = testDbManager.getDb();
-    typedMongo = TypedMongo.initialize(testDb);
+    typedMongo = new TypedMongo(testDb);
 
     // Clear collections before each test
     const collections = await testDb.listCollections().toArray();

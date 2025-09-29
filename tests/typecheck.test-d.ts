@@ -53,7 +53,7 @@ type PostSchema = {
 };
 
 const testDb = testDbManager.getDb();
-const typedMongo = TypedMongo.initialize(testDb);
+const typedMongo = new TypedMongo(testDb);
 
 const User = typedMongo.model<UserSchema>('users');
 const Post = typedMongo.model<PostSchema>('posts');
