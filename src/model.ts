@@ -60,7 +60,7 @@ export class Model<TSchema extends BaseSchema> {
   /**
    * Find documents and return a cursor (MongoDB standard behavior)
    */
-  find<TProjection extends Projection<TSchema> | undefined>(
+  findCursor<TProjection extends Projection<TSchema> | undefined>(
     filter: MongoFilter<TSchema>,
     options?: FindOptions<TSchema> & { projection?: TProjection },
   ): FindCursor<ProjectionType<TSchema, TProjection>> {
@@ -72,7 +72,7 @@ export class Model<TSchema extends BaseSchema> {
   /**
    * Find multiple documents and return as array (convenience method)
    */
-  async findMany<TProjection extends Projection<TSchema> | undefined>(
+  async find<TProjection extends Projection<TSchema> | undefined>(
     filter: MongoFilter<TSchema>,
     options?: FindOptions<TSchema> & { projection?: TProjection },
   ): Promise<ProjectionType<TSchema, TProjection>[]> {
