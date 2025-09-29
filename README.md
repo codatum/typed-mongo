@@ -64,7 +64,7 @@ await User.insertOne({
 const user = await User.findOne({ name: 'Alice' });
 
 // usersWithProjection is typed as { name: string; }[]
-const usersWithProjection = await User.findMany(
+const usersWithProjection = await User.find(
   {},
   { projection: { _id: 0, name: 1 } }
 );
@@ -109,8 +109,8 @@ const typedMongo = TypedMongo.initialize(db: Db, mongoClient?: MongoClient);
 Models provide the following methods:
 
 - `findOne(filter, options?)` - Find a single document
-- `find(filter, options?)` - Returns a cursor (MongoDB standard)
-- `findMany(filter, options?)` - Find multiple documents as an array
+- `findCursor(filter, options?)` - Returns a cursor (MongoDB standard)
+- `find(filter, options?)` - Find multiple documents as an array
 - `insertOne(doc, options?)` - Insert a single document
 - `insertMany(docs, options?)` - Insert multiple documents
 - `updateOne(filter, update, options?)` - Update a single document

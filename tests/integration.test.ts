@@ -219,7 +219,7 @@ describe('typed-mongo Integration Tests', () => {
     });
   });
 
-  describe('findMany', () => {
+  describe('find', () => {
     beforeEach(async () => {
       await User.insertMany([
         { _id: 'user1', name: 'Alice', age: 25, tags: ['admin', 'user'] },
@@ -271,7 +271,7 @@ describe('typed-mongo Integration Tests', () => {
     });
   });
 
-  describe('find', () => {
+  describe('findCursor', () => {
     beforeEach(async () => {
       await User.insertMany([
         { _id: 'user1', name: 'Alice', age: 25 },
