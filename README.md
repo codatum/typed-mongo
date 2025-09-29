@@ -48,7 +48,7 @@ await mongoClient.connect();
 const db = mongoClient.db('myapp');
 
 // Initialize typed-mongo
-const typedMongo = TypedMongo.initialize(db);
+const typedMongo = new TypedMongo(db);
 
 // Create a type-safe model
 const User = typedMongo.model<UserSchema>('users');
@@ -101,7 +101,7 @@ await User.insertOne({
 ### TypedMongo
 
 ```typescript
-const typedMongo = TypedMongo.initialize(db: Db, mongoClient?: MongoClient);
+const typedMongo = new TypedMongo(db: Db);
 ```
 
 ### Model
