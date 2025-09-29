@@ -79,7 +79,7 @@ describe('Type checking tests', () => {
 
   beforeAll(async () => {
     const testDb = testDbManager.getDb();
-    typedMongo = TypedMongo.initialize(testDb);
+    typedMongo = new TypedMongo(testDb);
     User = typedMongo.model<UserSchema>('users');
     Post = typedMongo.model<PostSchema>('posts');
   });
@@ -155,7 +155,7 @@ describe('Type checking tests', () => {
     });
 
     test('the findMany data type should match the schema-inferred type', async () => {
-      const users = await User.findMany({});
+      const users = await User.find({});
       for (const user of users) {
         expect(userSchema.safeParse(user).success).toBeTruthy();
       }

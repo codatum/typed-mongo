@@ -53,7 +53,7 @@ type PostSchema = {
 };
 
 const testDb = testDbManager.getDb();
-const typedMongo = TypedMongo.initialize(testDb);
+const typedMongo = new TypedMongo(testDb);
 
 const User = typedMongo.model<UserSchema>('users');
 const Post = typedMongo.model<PostSchema>('posts');
@@ -69,12 +69,12 @@ describe('Type checking tests', () => {
       const userResult = await User.findOne({ name: 'John' });
       expectTypeOf(userResult).toEqualTypeOf<UserSchema | null>();
 
-      const cursor = User.find({});
+      const cursor = User.findCursor({});
       expectTypeOf(cursor).toHaveProperty('toArray');
       const arrayResult = await cursor.toArray();
       expectTypeOf(arrayResult).toEqualTypeOf<UserSchema[]>();
 
-      const usersResult = await User.findMany({});
+      const usersResult = await User.find({});
       expectTypeOf(usersResult).toEqualTypeOf<UserSchema[]>();
     });
 
@@ -95,7 +95,7 @@ describe('Type checking tests', () => {
         };
       } | null>();
 
-      const projectedUsersResult = await User.findMany(
+      const projectedUsersResult = await User.find(
         { name: 'John' },
         { projection: { _id: 1, name: 1 } },
       );
