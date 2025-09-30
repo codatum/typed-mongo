@@ -43,7 +43,7 @@ type UserSchema = {
 };
 
 // Connect to MongoDB
-const mongoClient = new MongoClient('mongodb://localhost:27017');
+const mongoClient = new MongoClient('mongodb://localhost:27017', { ignoreUndefined: true });
 await mongoClient.connect();
 const db = mongoClient.db('myapp');
 
@@ -63,10 +63,10 @@ await User.insertOne({
 // user is typed as UserSchema | null
 const user = await User.findOne({ name: 'Alice' });
 
-// usersWithProjection is typed as { name: string; }[]
+// usersWithProjection is typed as { _id: ObjectId; name: string; }[]
 const usersWithProjection = await User.find(
   {},
-  { projection: { _id: 0, name: 1 } }
+  { projection: { name: 1 } }
 );
 ```
 
