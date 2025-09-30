@@ -29,7 +29,7 @@ class TestDBManager {
 
     this.mongod = await MongoMemoryServer.create();
     this.uri = this.mongod.getUri();
-    this.client = new MongoClient(this.uri);
+    this.client = new MongoClient(this.uri, { ignoreUndefined: true });
     await this.client.connect();
     this.db = this.client.db('test');
 
