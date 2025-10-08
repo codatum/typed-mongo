@@ -17,6 +17,8 @@ import type {
   FindOneAndReplaceOptions,
   FindOneAndUpdateOptions,
   FindOptions,
+  IndexDescription,
+  IndexInformationOptions,
   InsertManyResult,
   InsertOneOptions,
   InsertOneResult,
@@ -26,6 +28,7 @@ import type {
   UpdateOptions,
   UpdateResult,
 } from 'mongodb';
+import { MongoServerError } from 'mongodb';
 import type {
   BaseSchema,
   MongoBulkWriteOperation,
@@ -36,14 +39,88 @@ import type {
   StrictOptionalId,
 } from './types.js';
 
+export type ModelOptions = {
+  indexes?: IndexDescription[];
+};
+
+export type SyncIndexesResult = {
+  created: string[];
+  dropped: string[];
+};
+
 /**
  * Model class that provides type-safe MongoDB operations
  */
 export class Model<TSchema extends BaseSchema> {
   private collection: Collection<TSchema>;
+  private indexes: IndexDescription[] | undefined;
 
-  constructor(db: Db, collectionName: string) {
+  constructor(db: Db, collectionName: string, options: ModelOptions = {}) {
     this.collection = db.collection<TSchema>(collectionName);
+    this.indexes = options.indexes;
+  }
+
+  getCollection(): Collection<TSchema> {
+    return this.collection;
+  }
+
+  /**
+   * Synchronize indexes with the database
+   * 1. Get existing indexes from database
+   * 2. Create new indexes (MongoDB will skip existing ones)
+   * 3. Calculate diff
+   * 4. Drop obsolete indexes (_id index is default and should not be dropped)
+   */
+  async syncIndexes(options?: IndexInformationOptions): Promise<SyncIndexesResult> {
+    if (!this.indexes || this.indexes.length === 0) {
+      return {
+        created: [],
+        dropped: [],
+      };
+    }
+
+    // Step 1: Get existing indexes from database
+    let oldIndexNames: string[] = [];
+    try {
+      oldIndexNames = (await this.collection.listIndexes(options).toArray()).map(
+        (index) => index.name,
+      );
+    } catch (error) {
+      // If collection doesn't exist, there are no indexes
+      if (error instanceof MongoServerError) {
+        if (error.code === 26 || error.codeName === 'NamespaceNotFound') {
+          oldIndexNames = [];
+        }
+      }
+      throw error;
+    }
+
+    // Step 2: Create new indexes (MongoDB will skip existing ones)
+    const newIndexNames = await this.collection.createIndexes(this.indexes);
+
+    // Step 3: Calculate diff
+    const oldIndexNamesSet = new Set(oldIndexNames);
+    const newIndexNamesSet = new Set(newIndexNames);
+
+    const toDropIndexNames = oldIndexNames.filter((item) => !newIndexNamesSet.has(item));
+    const createdIndexNames = newIndexNames.filter((item) => !oldIndexNamesSet.has(item));
+
+    // Step 4: Drop obsolete indexes (_id index is default and should not be dropped)
+    const droppedIndexNames = [];
+    for (const indexName of toDropIndexNames) {
+      // _id index is default and should not be dropped
+      if (indexName === '_id_') {
+        continue;
+      }
+
+      await this.collection.dropIndex(indexName);
+      droppedIndexNames.push(indexName);
+    }
+
+    return {
+      created: createdIndexNames,
+      dropped: droppedIndexNames,
+    };
   }
 
   /**

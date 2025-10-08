@@ -1392,4 +1392,101 @@ describe('typed-mongo Integration Tests', () => {
       expect(objectIdDoc.insertedId).toBeInstanceOf(MongoObjectId);
     });
   });
+
+  describe('Index management', () => {
+    test('should sync indexes', async () => {
+      const User = typedMongo.model<UserSchema>('users', {
+        indexes: [
+          { key: { name: 1 } },
+          { key: { age: 1 }, name: 'age_1' },
+          { key: { email: 1 }, unique: true },
+        ],
+      });
+
+      const result = await User.syncIndexes();
+      expect(result.created).toHaveLength(3);
+      expect(result.dropped).toHaveLength(0);
+
+      // Check that indexes are created
+      const indexes = await User.getCollection().listIndexes().toArray();
+      expect(indexes).toHaveLength(4);
+      expect(indexes[0]).toMatchObject({ name: '_id_', key: { _id: 1 } });
+      expect(indexes[1]).toMatchObject({ name: 'name_1', key: { name: 1 } });
+      expect(indexes[2]).toMatchObject({ name: 'age_1', key: { age: 1 } });
+      expect(indexes[3]).toMatchObject({ name: 'email_1', key: { email: 1 }, unique: true });
+
+      // Update indexes
+      const User2 = typedMongo.model<UserSchema>('users', {
+        indexes: [
+          { key: { name: 1 } },
+          { key: { email: 1 }, unique: true },
+          { key: { 'profile.bio': 1 } },
+        ],
+      });
+
+      const result2 = await User2.syncIndexes();
+      expect(result2.created).toHaveLength(1);
+      expect(result2.dropped).toHaveLength(1);
+
+      const indexes2 = await User2.getCollection().listIndexes().toArray();
+      expect(indexes2).toHaveLength(4);
+      expect(indexes2[0]).toMatchObject({ name: '_id_', key: { _id: 1 } });
+      expect(indexes2[1]).toMatchObject({ name: 'name_1', key: { name: 1 } });
+      expect(indexes2[2]).toMatchObject({ name: 'email_1', key: { email: 1 }, unique: true });
+      expect(indexes2[3]).toMatchObject({ name: 'profile.bio_1', key: { 'profile.bio': 1 } });
+    });
+
+    test('should sync indexes for multiple models', async () => {
+      typedMongo.model<UserSchema>('users', {
+        indexes: [{ key: { name: 1 } }],
+      });
+
+      const results = await typedMongo.syncIndexes();
+      expect(results).toHaveLength(2);
+      expect(results[0]?.collectionName).toBe('users');
+      expect(results[0]?.created).toHaveLength(0);
+      expect(results[0]?.dropped).toHaveLength(2);
+      expect(results[1]?.collectionName).toBe('posts');
+      expect(results[1]?.created).toHaveLength(0);
+      expect(results[1]?.dropped).toHaveLength(0);
+
+      const indexes = await User.getCollection().listIndexes().toArray();
+      expect(indexes).toHaveLength(2);
+      expect(indexes[0]).toMatchObject({ name: '_id_', key: { _id: 1 } });
+      expect(indexes[1]).toMatchObject({ name: 'name_1', key: { name: 1 } });
+
+      const indexes2 = await Post.getCollection().listIndexes().toArray();
+      expect(indexes2).toHaveLength(1);
+      expect(indexes2[0]).toMatchObject({ name: '_id_', key: { _id: 1 } });
+
+      // Update indexes
+      typedMongo.model<UserSchema>('users', {
+        indexes: [{ key: { name: 1 } }, { key: { email: 1 }, unique: true }],
+      });
+
+      typedMongo.model<PostSchema>('posts', {
+        indexes: [{ key: { title: 1 } }],
+      });
+
+      const results2 = await typedMongo.syncIndexes();
+      expect(results2).toHaveLength(2);
+      expect(results2[0]?.collectionName).toBe('users');
+      expect(results2[0]?.created).toHaveLength(1);
+      expect(results2[0]?.dropped).toHaveLength(0);
+      expect(results2[1]?.collectionName).toBe('posts');
+      expect(results2[1]?.created).toHaveLength(1);
+      expect(results2[1]?.dropped).toHaveLength(0);
+
+      const userIndexes = await User.getCollection().listIndexes().toArray();
+      expect(userIndexes).toHaveLength(3);
+      expect(userIndexes[0]).toMatchObject({ name: '_id_', key: { _id: 1 } });
+      expect(userIndexes[1]).toMatchObject({ name: 'name_1', key: { name: 1 } });
+      expect(userIndexes[2]).toMatchObject({ name: 'email_1', key: { email: 1 }, unique: true });
+
+      const postIndexes = await Post.getCollection().listIndexes().toArray();
+      expect(postIndexes).toHaveLength(2);
+      expect(postIndexes[0]).toMatchObject({ name: '_id_', key: { _id: 1 } });
+      expect(postIndexes[1]).toMatchObject({ name: 'title_1', key: { title: 1 } });
+    });
+  });
 });
