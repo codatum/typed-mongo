@@ -1,4 +1,4 @@
-import type { Db } from 'mongodb';
+import type { CreateIndexesOptions, Db } from 'mongodb';
 import { Model, type ModelOptions } from './model.js';
 import type { BaseSchema } from './types.js';
 
@@ -35,11 +35,11 @@ export class TypedMongo {
    * 4. Drop obsolete indexes (_id index is default and should not be dropped)
    * @returns Promise that resolves when all indexes are synchronized
    */
-  async syncIndexes(): Promise<SyncIndexesResults> {
+  async syncIndexes(options?: CreateIndexesOptions): Promise<SyncIndexesResults> {
     const results: SyncIndexesResults = [];
 
     for (const model of this.models.values()) {
-      const result = await model.syncIndexes();
+      const result = await model.syncIndexes(options);
       results.push({
         collectionName: model.getCollection().collectionName,
         created: result.created,

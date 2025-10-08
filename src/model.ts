@@ -6,6 +6,7 @@ import type {
   BulkWriteResult,
   Collection,
   CountDocumentsOptions,
+  CreateIndexesOptions,
   Db,
   DeleteOptions,
   DeleteResult,
@@ -18,7 +19,6 @@ import type {
   FindOneAndUpdateOptions,
   FindOptions,
   IndexDescription,
-  IndexInformationOptions,
   InsertManyResult,
   InsertOneOptions,
   InsertOneResult,
@@ -71,7 +71,7 @@ export class Model<TSchema extends BaseSchema> {
    * 3. Calculate diff
    * 4. Drop obsolete indexes (_id index is default and should not be dropped)
    */
-  async syncIndexes(options?: IndexInformationOptions): Promise<SyncIndexesResult> {
+  async syncIndexes(options?: CreateIndexesOptions): Promise<SyncIndexesResult> {
     if (!this.indexes || this.indexes.length === 0) {
       return {
         created: [],
@@ -82,21 +82,22 @@ export class Model<TSchema extends BaseSchema> {
     // Step 1: Get existing indexes from database
     let oldIndexNames: string[] = [];
     try {
-      oldIndexNames = (await this.collection.listIndexes(options).toArray()).map(
-        (index) => index.name,
-      );
+      oldIndexNames = (await this.collection.listIndexes().toArray()).map((index) => index.name);
     } catch (error) {
       // If collection doesn't exist, there are no indexes
       if (error instanceof MongoServerError) {
         if (error.code === 26 || error.codeName === 'NamespaceNotFound') {
           oldIndexNames = [];
+        } else {
+          throw error;
         }
+      } else {
+        throw error;
       }
-      throw error;
     }
 
     // Step 2: Create new indexes (MongoDB will skip existing ones)
-    const newIndexNames = await this.collection.createIndexes(this.indexes);
+    const newIndexNames = await this.collection.createIndexes(this.indexes, options);
 
     // Step 3: Calculate diff
     const oldIndexNamesSet = new Set(oldIndexNames);
