@@ -1403,7 +1403,7 @@ describe('typed-mongo Integration Tests', () => {
         ],
       });
 
-      const result = await User.syncIndexes();
+      const result = await User.syncIndexes({ dropObsolete: true });
       expect(result.created).toHaveLength(3);
       expect(result.dropped).toHaveLength(0);
 
@@ -1424,7 +1424,7 @@ describe('typed-mongo Integration Tests', () => {
         ],
       });
 
-      const result2 = await User2.syncIndexes();
+      const result2 = await User2.syncIndexes({ dropObsolete: true });
       expect(result2.created).toHaveLength(1);
       expect(result2.dropped).toHaveLength(1);
 
@@ -1441,7 +1441,7 @@ describe('typed-mongo Integration Tests', () => {
         indexes: [{ key: { name: 1 } }],
       });
 
-      const results = await typedMongo.syncIndexes();
+      const results = await typedMongo.syncIndexes({ dropObsolete: true });
       expect(results).toHaveLength(2);
       expect(results[0]?.collectionName).toBe('users');
       expect(results[0]?.created).toHaveLength(0);
@@ -1468,7 +1468,7 @@ describe('typed-mongo Integration Tests', () => {
         indexes: [{ key: { title: 1 } }],
       });
 
-      const results2 = await typedMongo.syncIndexes();
+      const results2 = await typedMongo.syncIndexes({ dropObsolete: true });
       expect(results2).toHaveLength(2);
       expect(results2[0]?.collectionName).toBe('users');
       expect(results2[0]?.created).toHaveLength(1);
@@ -1487,6 +1487,27 @@ describe('typed-mongo Integration Tests', () => {
       expect(postIndexes).toHaveLength(2);
       expect(postIndexes[0]).toMatchObject({ name: '_id_', key: { _id: 1 } });
       expect(postIndexes[1]).toMatchObject({ name: 'title_1', key: { title: 1 } });
+
+      // without dropObsolete
+      const results3 = await typedMongo.syncIndexes();
+      expect(results3).toHaveLength(2);
+      expect(results3[0]?.collectionName).toBe('users');
+      expect(results3[0]?.created).toHaveLength(0);
+      expect(results3[0]?.dropped).toHaveLength(0);
+      expect(results3[1]?.collectionName).toBe('posts');
+      expect(results3[1]?.created).toHaveLength(0);
+      expect(results3[1]?.dropped).toHaveLength(0);
+
+      const userIndexes3 = await User.getCollection().listIndexes().toArray();
+      expect(userIndexes3).toHaveLength(3);
+      expect(userIndexes3[0]).toMatchObject({ name: '_id_', key: { _id: 1 } });
+      expect(userIndexes3[1]).toMatchObject({ name: 'name_1', key: { name: 1 } });
+      expect(userIndexes3[2]).toMatchObject({ name: 'email_1', key: { email: 1 }, unique: true });
+
+      const postIndexes3 = await Post.getCollection().listIndexes().toArray();
+      expect(postIndexes3).toHaveLength(2);
+      expect(postIndexes3[0]).toMatchObject({ name: '_id_', key: { _id: 1 } });
+      expect(postIndexes3[1]).toMatchObject({ name: 'title_1', key: { title: 1 } });
     });
   });
 
@@ -1496,7 +1517,7 @@ describe('typed-mongo Integration Tests', () => {
         indexes: [{ key: { name: 1, age: -1 } }, { key: { email: 1, name: 1 }, unique: true }],
       });
 
-      const result = await User.syncIndexes();
+      const result = await User.syncIndexes({ dropObsolete: true });
       expect(result.created).toHaveLength(2);
 
       const indexes = await User.getCollection().listIndexes().toArray();
@@ -1517,7 +1538,7 @@ describe('typed-mongo Integration Tests', () => {
         indexes: [{ key: { name: 'text', 'profile.bio': 'text' } }],
       });
 
-      const result = await User.syncIndexes();
+      const result = await User.syncIndexes({ dropObsolete: true });
       expect(result.created).toHaveLength(1);
 
       const indexes = await User.getCollection().listIndexes().toArray();
@@ -1542,7 +1563,7 @@ describe('typed-mongo Integration Tests', () => {
         indexes: [{ key: { location: '2dsphere' } }],
       });
 
-      const result = await Location.syncIndexes();
+      const result = await Location.syncIndexes({ dropObsolete: true });
       expect(result.created).toHaveLength(1);
 
       const indexes = await Location.getCollection().listIndexes().toArray();
@@ -1562,7 +1583,7 @@ describe('typed-mongo Integration Tests', () => {
         ],
       });
 
-      const result = await User.syncIndexes();
+      const result = await User.syncIndexes({ dropObsolete: true });
       expect(result.created).toHaveLength(1);
 
       const indexes = await User.getCollection().listIndexes().toArray();
@@ -1584,7 +1605,7 @@ describe('typed-mongo Integration Tests', () => {
         ],
       });
 
-      const result = await User.syncIndexes();
+      const result = await User.syncIndexes({ dropObsolete: true });
       expect(result.created).toHaveLength(1);
 
       const indexes = await User.getCollection().listIndexes().toArray();
@@ -1603,7 +1624,7 @@ describe('typed-mongo Integration Tests', () => {
         ],
       });
 
-      const result = await User.syncIndexes();
+      const result = await User.syncIndexes({ dropObsolete: true });
       expect(result.created).toHaveLength(1);
 
       const indexes = await User.getCollection().listIndexes().toArray();
@@ -1622,7 +1643,7 @@ describe('typed-mongo Integration Tests', () => {
         ],
       });
 
-      const result = await User.syncIndexes();
+      const result = await User.syncIndexes({ dropObsolete: true });
       expect(result.created).toHaveLength(1);
 
       const indexes = await User.getCollection().listIndexes().toArray();
@@ -1641,7 +1662,7 @@ describe('typed-mongo Integration Tests', () => {
         ],
       });
 
-      const result = await User.syncIndexes();
+      const result = await User.syncIndexes({ dropObsolete: true });
       expect(result.created).toHaveLength(1);
 
       const indexes = await User.getCollection().listIndexes().toArray();
@@ -1663,7 +1684,7 @@ describe('typed-mongo Integration Tests', () => {
         ],
       });
 
-      const result = await User.syncIndexes();
+      const result = await User.syncIndexes({ dropObsolete: true });
       expect(result.created).toHaveLength(1);
 
       const indexes = await User.getCollection().listIndexes().toArray();
@@ -1678,7 +1699,7 @@ describe('typed-mongo Integration Tests', () => {
         indexes: [{ key: { name: 1 } }],
       });
 
-      await User.syncIndexes();
+      await User.syncIndexes({ dropObsolete: true });
 
       const indexes = await User.getCollection().listIndexes().toArray();
       const idIndex = indexes.find((idx) => idx.name === '_id_');
@@ -1697,7 +1718,7 @@ describe('typed-mongo Integration Tests', () => {
       await User.getCollection().createIndex({ name: 1 });
       await User.getCollection().createIndex({ age: 1 });
 
-      const result = await User.syncIndexes();
+      const result = await User.syncIndexes({ dropObsolete: true });
       expect(result.created).toHaveLength(0);
       expect(result.dropped).toHaveLength(2);
 
@@ -1715,7 +1736,7 @@ describe('typed-mongo Integration Tests', () => {
         indexes: [{ key: { email: 1 } }],
       });
 
-      const result1 = await User1.syncIndexes();
+      const result1 = await User1.syncIndexes({ dropObsolete: true });
       expect(result1.created).toHaveLength(1);
 
       // Verify initial index doesn't have unique
@@ -1729,7 +1750,7 @@ describe('typed-mongo Integration Tests', () => {
       });
 
       // should throw error because index already exists
-      await expect(User2.syncIndexes()).rejects.toThrow();
+      await expect(User2.syncIndexes({ dropObsolete: true })).rejects.toThrow();
     });
 
     test('should handle multiple models with different indexes on same collection', async () => {
@@ -1738,14 +1759,14 @@ describe('typed-mongo Integration Tests', () => {
         indexes: [{ key: { name: 1 } }],
       });
 
-      await User1.syncIndexes();
+      await User1.syncIndexes({ dropObsolete: true });
 
       // Second model with different indexes on same collection
       const User2 = typedMongo.model<UserSchema>('shared_collection', {
         indexes: [{ key: { age: 1 } }],
       });
 
-      const result = await User2.syncIndexes();
+      const result = await User2.syncIndexes({ dropObsolete: true });
       expect(result.dropped).toHaveLength(1); // Drops name index
       expect(result.created).toHaveLength(1); // Creates age index
 
@@ -1760,7 +1781,7 @@ describe('typed-mongo Integration Tests', () => {
         indexes: [{ key: { '$**': 1 } }],
       });
 
-      const result = await User.syncIndexes();
+      const result = await User.syncIndexes({ dropObsolete: true });
       expect(result.created).toHaveLength(1);
 
       const indexes = await User.getCollection().listIndexes().toArray();
@@ -1774,7 +1795,7 @@ describe('typed-mongo Integration Tests', () => {
         indexes: [{ key: { _id: 'hashed' } }],
       });
 
-      const result = await User.syncIndexes();
+      const result = await User.syncIndexes({ dropObsolete: true });
       expect(result.created).toHaveLength(1);
 
       const indexes = await User.getCollection().listIndexes().toArray();
@@ -1788,7 +1809,7 @@ describe('typed-mongo Integration Tests', () => {
       tm.model<UserSchema>('collection1');
       tm.model<PostSchema>('collection2');
 
-      const results = await tm.syncIndexes();
+      const results = await tm.syncIndexes({ dropObsolete: true });
       expect(results).toHaveLength(2);
       expect(results[0]?.created).toHaveLength(0);
       expect(results[0]?.dropped).toHaveLength(0);
@@ -1808,7 +1829,7 @@ describe('typed-mongo Integration Tests', () => {
       ]);
 
       // Syncing should fail due to duplicate values for unique index
-      await expect(User.syncIndexes()).rejects.toThrow();
+      await expect(User.syncIndexes({ dropObsolete: true })).rejects.toThrow();
     });
   });
 });
