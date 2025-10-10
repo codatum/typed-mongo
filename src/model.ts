@@ -43,6 +43,12 @@ export type ModelOptions = {
   indexes?: IndexDescription[];
 };
 
+export type SyncIndexesOptions = {
+  // TODO: recreateModified?: boolean;
+  dropObsolete?: boolean;
+  mongoCreateIndexesOptions?: CreateIndexesOptions;
+};
+
 export type SyncIndexesResult = {
   created: string[];
   dropped: string[];
@@ -69,9 +75,9 @@ export class Model<TSchema extends BaseSchema> {
    * 1. Get existing indexes from database
    * 2. Create new indexes (MongoDB will skip existing ones)
    * 3. Calculate diff
-   * 4. Drop obsolete indexes (_id index is default and should not be dropped)
+   * 4. Drop obsolete indexes (if enabled)
    */
-  async syncIndexes(options?: CreateIndexesOptions): Promise<SyncIndexesResult> {
+  async syncIndexes(options?: SyncIndexesOptions): Promise<SyncIndexesResult> {
     if (!this.indexes) {
       return {
         created: [],
@@ -99,7 +105,10 @@ export class Model<TSchema extends BaseSchema> {
     // Step 2: Create new indexes (MongoDB will skip existing ones)
     let newIndexNames: string[] = [];
     if (this.indexes.length > 0) {
-      newIndexNames = await this.collection.createIndexes(this.indexes, options);
+      newIndexNames = await this.collection.createIndexes(
+        this.indexes,
+        options?.mongoCreateIndexesOptions,
+      );
     }
 
     // Step 3: Calculate diff
@@ -109,16 +118,18 @@ export class Model<TSchema extends BaseSchema> {
     const toDropIndexNames = oldIndexNames.filter((item) => !newIndexNamesSet.has(item));
     const createdIndexNames = newIndexNames.filter((item) => !oldIndexNamesSet.has(item));
 
-    // Step 4: Drop obsolete indexes (_id index is default and should not be dropped)
+    // Step 4: If enabled, drop obsolete indexes (_id index is default and should not be dropped)
     const droppedIndexNames = [];
-    for (const indexName of toDropIndexNames) {
-      // _id index is default and should not be dropped
-      if (indexName === '_id_') {
-        continue;
-      }
+    if (options?.dropObsolete) {
+      for (const indexName of toDropIndexNames) {
+        // _id index is default and should not be dropped
+        if (indexName === '_id_') {
+          continue;
+        }
 
-      await this.collection.dropIndex(indexName);
-      droppedIndexNames.push(indexName);
+        await this.collection.dropIndex(indexName);
+        droppedIndexNames.push(indexName);
+      }
     }
 
     return {
