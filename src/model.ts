@@ -72,7 +72,7 @@ export class Model<TSchema extends BaseSchema> {
    * 4. Drop obsolete indexes (_id index is default and should not be dropped)
    */
   async syncIndexes(options?: CreateIndexesOptions): Promise<SyncIndexesResult> {
-    if (!this.indexes || this.indexes.length === 0) {
+    if (!this.indexes) {
       return {
         created: [],
         dropped: [],
@@ -97,7 +97,10 @@ export class Model<TSchema extends BaseSchema> {
     }
 
     // Step 2: Create new indexes (MongoDB will skip existing ones)
-    const newIndexNames = await this.collection.createIndexes(this.indexes, options);
+    let newIndexNames: string[] = [];
+    if (this.indexes.length > 0) {
+      newIndexNames = await this.collection.createIndexes(this.indexes, options);
+    }
 
     // Step 3: Calculate diff
     const oldIndexNamesSet = new Set(oldIndexNames);

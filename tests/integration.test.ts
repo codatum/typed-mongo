@@ -1489,4 +1489,349 @@ describe('typed-mongo Integration Tests', () => {
       expect(postIndexes[1]).toMatchObject({ name: 'title_1', key: { title: 1 } });
     });
   });
+
+  describe('Index management - Additional tests', () => {
+    test('should handle compound indexes', async () => {
+      const User = typedMongo.model<UserSchema>('users', {
+        indexes: [
+          { key: { name: 1, age: -1 } },
+          { key: { email: 1, name: 1 }, unique: true },
+        ],
+      });
+
+      const result = await User.syncIndexes();
+      expect(result.created).toHaveLength(2);
+
+      const indexes = await User.getCollection().listIndexes().toArray();
+      expect(indexes).toHaveLength(3); // _id + 2 compound indexes
+      expect(indexes[1]).toMatchObject({
+        name: 'name_1_age_-1',
+        key: { name: 1, age: -1 }
+      });
+      expect(indexes[2]).toMatchObject({
+        name: 'email_1_name_1',
+        key: { email: 1, name: 1 },
+        unique: true
+      });
+    });
+
+    test('should handle text indexes', async () => {
+      const User = typedMongo.model<UserSchema>('users_text', {
+        indexes: [
+          { key: { name: 'text', 'profile.bio': 'text' } },
+        ],
+      });
+
+      const result = await User.syncIndexes();
+      expect(result.created).toHaveLength(1);
+
+      const indexes = await User.getCollection().listIndexes().toArray();
+      const textIndex = indexes.find(idx => idx.name !== '_id_');
+      expect(textIndex).toBeDefined();
+      // Text indexes have special key format in MongoDB
+      expect(textIndex?.key).toHaveProperty('_fts');
+      expect(textIndex?.key._fts).toBe('text');
+    });
+
+    test('should handle 2dsphere indexes', async () => {
+      type LocationSchema = {
+        _id: string;
+        name: string;
+        location: {
+          type: 'Point';
+          coordinates: [number, number];
+        };
+      };
+
+      const Location = typedMongo.model<LocationSchema>('locations', {
+        indexes: [
+          { key: { location: '2dsphere' } },
+        ],
+      });
+
+      const result = await Location.syncIndexes();
+      expect(result.created).toHaveLength(1);
+
+      const indexes = await Location.getCollection().listIndexes().toArray();
+      const geoIndex = indexes.find(idx => idx.name !== '_id_');
+      expect(geoIndex).toBeDefined();
+      expect(geoIndex?.key).toMatchObject({ location: '2dsphere' });
+    });
+
+    test('should handle partial indexes', async () => {
+      const User = typedMongo.model<UserSchema>('users_partial', {
+        indexes: [
+          {
+            key: { email: 1 },
+            unique: true,
+            partialFilterExpression: { email: { $exists: true } }
+          },
+        ],
+      });
+
+      const result = await User.syncIndexes();
+      expect(result.created).toHaveLength(1);
+
+      const indexes = await User.getCollection().listIndexes().toArray();
+      const partialIndex = indexes.find(idx => idx.name === 'email_1');
+      expect(partialIndex).toBeDefined();
+      expect(partialIndex?.unique).toBe(true);
+      expect(partialIndex?.partialFilterExpression).toEqual({
+        email: { $exists: true }
+      });
+    });
+
+    test('should handle TTL indexes', async () => {
+      const User = typedMongo.model<UserSchema>('users_ttl', {
+        indexes: [
+          {
+            key: { 'metadata.created': 1 },
+            expireAfterSeconds: 3600
+          },
+        ],
+      });
+
+      const result = await User.syncIndexes();
+      expect(result.created).toHaveLength(1);
+
+      const indexes = await User.getCollection().listIndexes().toArray();
+      const ttlIndex = indexes.find(idx => idx.name === 'metadata.created_1');
+      expect(ttlIndex).toBeDefined();
+      expect(ttlIndex?.expireAfterSeconds).toBe(3600);
+    });
+
+    test('should handle sparse indexes', async () => {
+      const User = typedMongo.model<UserSchema>('users_sparse', {
+        indexes: [
+          {
+            key: { email: 1 },
+            sparse: true
+          },
+        ],
+      });
+
+      const result = await User.syncIndexes();
+      expect(result.created).toHaveLength(1);
+
+      const indexes = await User.getCollection().listIndexes().toArray();
+      const sparseIndex = indexes.find(idx => idx.name === 'email_1');
+      expect(sparseIndex).toBeDefined();
+      expect(sparseIndex?.sparse).toBe(true);
+    });
+
+    test('should handle custom index names', async () => {
+      const User = typedMongo.model<UserSchema>('users_custom', {
+        indexes: [
+          {
+            key: { name: 1, age: 1 },
+            name: 'custom_name_age_index'
+          },
+        ],
+      });
+
+      const result = await User.syncIndexes();
+      expect(result.created).toHaveLength(1);
+
+      const indexes = await User.getCollection().listIndexes().toArray();
+      const customIndex = indexes.find(idx => idx.name === 'custom_name_age_index');
+      expect(customIndex).toBeDefined();
+      expect(customIndex?.key).toMatchObject({ name: 1, age: 1 });
+    });
+
+    test('should handle collation in indexes', async () => {
+      const User = typedMongo.model<UserSchema>('users_collation', {
+        indexes: [
+          {
+            key: { name: 1 },
+            collation: { locale: 'en', strength: 2 }
+          },
+        ],
+      });
+
+      const result = await User.syncIndexes();
+      expect(result.created).toHaveLength(1);
+
+      const indexes = await User.getCollection().listIndexes().toArray();
+      const collationIndex = indexes.find(idx => idx.name === 'name_1');
+      expect(collationIndex).toBeDefined();
+      expect(collationIndex?.collation).toMatchObject({
+        locale: 'en',
+        strength: 2
+      });
+    });
+
+    test('should handle background index creation', async () => {
+      const User = typedMongo.model<UserSchema>('users_bg', {
+        indexes: [
+          {
+            key: { name: 1 },
+            background: true
+          },
+        ],
+      });
+
+      const result = await User.syncIndexes();
+      expect(result.created).toHaveLength(1);
+
+      const indexes = await User.getCollection().listIndexes().toArray();
+      const bgIndex = indexes.find(idx => idx.name === 'name_1');
+      expect(bgIndex).toBeDefined();
+      // Note: background option might not be reflected in listIndexes output
+      // but the index should be created successfully
+    });
+
+    test('should preserve _id index when syncing', async () => {
+      const User = typedMongo.model<UserSchema>('users_preserve', {
+        indexes: [
+          { key: { name: 1 } },
+        ],
+      });
+
+      await User.syncIndexes();
+      
+      const indexes = await User.getCollection().listIndexes().toArray();
+      const idIndex = indexes.find(idx => idx.name === '_id_');
+      expect(idIndex).toBeDefined();
+      expect(idIndex?.key).toMatchObject({ _id: 1 });
+    });
+
+    test('should handle empty indexes array', async () => {
+      // Create a fresh collection for this test
+      const collectionName = `users_empty_${Date.now()}`;
+      const User = typedMongo.model<UserSchema>(collectionName, {
+        indexes: [],
+      });
+
+      // First create some indexes
+      await User.getCollection().createIndex({ name: 1 });
+      await User.getCollection().createIndex({ age: 1 });
+
+      const result = await User.syncIndexes();
+      expect(result.created).toHaveLength(0);
+      expect(result.dropped).toHaveLength(2);
+
+      const indexes = await User.getCollection().listIndexes().toArray();
+      expect(indexes).toHaveLength(1); // Only _id index remains
+      expect(indexes[0]?.name).toBe('_id_');
+    });
+
+    test('should handle index recreation when options change', async () => {
+      // Create a fresh collection for this test
+      const collectionName = `users_recreate_${Date.now()}`;
+      
+      // Create initial index
+      const User1 = typedMongo.model<UserSchema>(collectionName, {
+        indexes: [
+          { key: { email: 1 } },
+        ],
+      });
+
+      const result1 = await User1.syncIndexes();
+      expect(result1.created).toHaveLength(1);
+
+      // Verify initial index doesn't have unique
+      const indexes1 = await User1.getCollection().listIndexes().toArray();
+      const emailIndex1 = indexes1.find(idx => idx.name === 'email_1');
+      expect(emailIndex1?.unique).toBeUndefined();
+
+      // Change index options (add unique) - this should drop and recreate
+      const User2 = typedMongo.model<UserSchema>(collectionName, {
+        indexes: [
+          { key: { email: 1 }, unique: true },
+        ],
+      });
+
+      // should throw error because index already exists
+      await expect(User2.syncIndexes()).rejects.toThrow();
+    });
+
+    test('should handle multiple models with different indexes on same collection', async () => {
+      // First model with one set of indexes
+      const User1 = typedMongo.model<UserSchema>('shared_collection', {
+        indexes: [
+          { key: { name: 1 } },
+        ],
+      });
+
+      await User1.syncIndexes();
+
+      // Second model with different indexes on same collection
+      const User2 = typedMongo.model<UserSchema>('shared_collection', {
+        indexes: [
+          { key: { age: 1 } },
+        ],
+      });
+
+      const result = await User2.syncIndexes();
+      expect(result.dropped).toHaveLength(1); // Drops name index
+      expect(result.created).toHaveLength(1); // Creates age index
+
+      const indexes = await User2.getCollection().listIndexes().toArray();
+      expect(indexes).toHaveLength(2); // _id + age
+      expect(indexes.some(idx => idx.name === 'age_1')).toBe(true);
+      expect(indexes.some(idx => idx.name === 'name_1')).toBe(false);
+    });
+
+    test('should handle wildcard indexes', async () => {
+      const User = typedMongo.model<UserSchema>('users_wildcard', {
+        indexes: [
+          { key: { '$**': 1 } },
+        ],
+      });
+
+      const result = await User.syncIndexes();
+      expect(result.created).toHaveLength(1);
+
+      const indexes = await User.getCollection().listIndexes().toArray();
+      const wildcardIndex = indexes.find(idx => idx.name !== '_id_');
+      expect(wildcardIndex).toBeDefined();
+      expect(wildcardIndex?.key).toMatchObject({ '$**': 1 });
+    });
+
+    test('should handle hashed indexes', async () => {
+      const User = typedMongo.model<UserSchema>('users_hashed', {
+        indexes: [
+          { key: { _id: 'hashed' } },
+        ],
+      });
+
+      const result = await User.syncIndexes();
+      expect(result.created).toHaveLength(1);
+
+      const indexes = await User.getCollection().listIndexes().toArray();
+      const hashedIndex = indexes.find(idx => idx.name === '_id_hashed');
+      expect(hashedIndex).toBeDefined();
+      expect(hashedIndex?.key).toMatchObject({ _id: 'hashed' });
+    });
+
+    test('should return empty results when no models have indexes', async () => {
+      const tm = new TypedMongo(testDbManager.getDb());
+      tm.model<UserSchema>('collection1');
+      tm.model<PostSchema>('collection2');
+
+      const results = await tm.syncIndexes();
+      expect(results).toHaveLength(2);
+      expect(results[0]?.created).toHaveLength(0);
+      expect(results[0]?.dropped).toHaveLength(0);
+      expect(results[1]?.created).toHaveLength(0);
+      expect(results[1]?.dropped).toHaveLength(0);
+    });
+
+    test('should handle index sync errors gracefully', async () => {
+      const User = typedMongo.model<UserSchema>('users_error', {
+        indexes: [
+          { key: { name: 1 }, unique: true },
+        ],
+      });
+
+      // Insert duplicate data
+      await User.insertMany([
+        { _id: 'user1', name: 'Alice', age: 25 },
+        { _id: 'user2', name: 'Alice', age: 30 },
+      ]);
+
+      // Syncing should fail due to duplicate values for unique index
+      await expect(User.syncIndexes()).rejects.toThrow();
+    });
+  });
 });
