@@ -96,6 +96,25 @@ await User.insertOne({
 // Error: Property 'name' is missing
 ```
 
+## Index Management
+
+typed-mongo provides declarative index creation.  
+
+```typescript
+const User = typedMongo.model<UserSchema>('users', {
+  indexes: [
+    { key: { email: 1 }, unique: true },
+    { key: { name: 1 } },
+  ]
+});
+
+// sync indexes for a single model
+await User.syncIndexes();
+
+// otherwise, you can sync indexes for all models
+await typedMongo.syncIndexes();
+```
+
 ## API Reference
 
 ### TypedMongo
@@ -103,6 +122,13 @@ await User.insertOne({
 ```typescript
 const typedMongo = new TypedMongo(db: Db);
 ```
+
+#### Methods
+
+- `model<TSchema>(collectionName: string, options?: ModelOptions)` - Create a type-safe model
+- `syncIndexes(options?)` - Synchronize indexes for all registered models
+- `getModels()` - Get all registered models
+- `getDb()` - Get the underlying MongoDB database instance
 
 ### Model
 
@@ -125,6 +151,8 @@ Models provide the following methods:
 - `distinct(key, filter?, options?)` - Get distinct values
 - `aggregate(pipeline, options?)` - Aggregation pipeline
 - `bulkWrite(operations, options?)` - Bulk write operations
+- `syncIndexes(options?)` - Synchronize indexes for this model
+- `getCollection()` - Get the underlying MongoDB collection
 
 ## Performance
 
