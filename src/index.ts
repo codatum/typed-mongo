@@ -33,7 +33,7 @@ export class TypedMongo {
    * 2. Create new indexes (MongoDB will skip existing ones)
    * 3. Calculate diff
    * 4. Drop obsolete indexes (_id index is default and should not be dropped)
-   * @returns Promise that resolves when all indexes are synchronized
+   * @returns {Promise<SyncIndexesResults>}
    */
   async syncIndexes(options?: SyncIndexesOptions): Promise<SyncIndexesResults> {
     const results: SyncIndexesResults = [];

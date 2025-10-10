@@ -108,11 +108,14 @@ const User = typedMongo.model<UserSchema>('users', {
   ]
 });
 
-// sync indexes for a single model
+// Create indexes and drop obsolete ones (Recommended)
+await User.syncIndexes({ dropObsolete: true });
+
+// Sync indexes (safe: only creates new indexes, never drops)
 await User.syncIndexes();
 
 // otherwise, you can sync indexes for all models
-await typedMongo.syncIndexes();
+await typedMongo.syncIndexes({ dropObsolete: true });
 ```
 
 ## API Reference
