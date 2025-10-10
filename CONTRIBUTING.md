@@ -170,11 +170,14 @@ Note: Only repository maintainers have permission to trigger releases.
 ```
 typed-mongo/
 ├── src/              # Source code
-│   ├── client.ts     # Client class
-│   ├── model.ts      # Model class
+│   ├── model.ts      # Model class (includes index management)
 │   ├── types.ts      # Type definitions
-│   └── index.ts      # Entry point
+│   └── index.ts      # Entry point (TypedMongo class)
 ├── tests/            # Test files
+│   ├── integration.test.ts    # Integration tests
+│   ├── typecheck.test.ts      # Type checking tests
+│   ├── typecheck.test-d.ts    # TypeScript definition tests
+│   └── setup/                 # Test setup files
 ├── dist/             # Build artifacts (gitignored)
 └── .github/          # GitHub Actions configuration
 ```
