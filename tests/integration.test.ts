@@ -1493,10 +1493,7 @@ describe('typed-mongo Integration Tests', () => {
   describe('Index management - Additional tests', () => {
     test('should handle compound indexes', async () => {
       const User = typedMongo.model<UserSchema>('users', {
-        indexes: [
-          { key: { name: 1, age: -1 } },
-          { key: { email: 1, name: 1 }, unique: true },
-        ],
+        indexes: [{ key: { name: 1, age: -1 } }, { key: { email: 1, name: 1 }, unique: true }],
       });
 
       const result = await User.syncIndexes();
@@ -1506,27 +1503,25 @@ describe('typed-mongo Integration Tests', () => {
       expect(indexes).toHaveLength(3); // _id + 2 compound indexes
       expect(indexes[1]).toMatchObject({
         name: 'name_1_age_-1',
-        key: { name: 1, age: -1 }
+        key: { name: 1, age: -1 },
       });
       expect(indexes[2]).toMatchObject({
         name: 'email_1_name_1',
         key: { email: 1, name: 1 },
-        unique: true
+        unique: true,
       });
     });
 
     test('should handle text indexes', async () => {
       const User = typedMongo.model<UserSchema>('users_text', {
-        indexes: [
-          { key: { name: 'text', 'profile.bio': 'text' } },
-        ],
+        indexes: [{ key: { name: 'text', 'profile.bio': 'text' } }],
       });
 
       const result = await User.syncIndexes();
       expect(result.created).toHaveLength(1);
 
       const indexes = await User.getCollection().listIndexes().toArray();
-      const textIndex = indexes.find(idx => idx.name !== '_id_');
+      const textIndex = indexes.find((idx) => idx.name !== '_id_');
       expect(textIndex).toBeDefined();
       // Text indexes have special key format in MongoDB
       expect(textIndex?.key).toHaveProperty('_fts');
@@ -1544,16 +1539,14 @@ describe('typed-mongo Integration Tests', () => {
       };
 
       const Location = typedMongo.model<LocationSchema>('locations', {
-        indexes: [
-          { key: { location: '2dsphere' } },
-        ],
+        indexes: [{ key: { location: '2dsphere' } }],
       });
 
       const result = await Location.syncIndexes();
       expect(result.created).toHaveLength(1);
 
       const indexes = await Location.getCollection().listIndexes().toArray();
-      const geoIndex = indexes.find(idx => idx.name !== '_id_');
+      const geoIndex = indexes.find((idx) => idx.name !== '_id_');
       expect(geoIndex).toBeDefined();
       expect(geoIndex?.key).toMatchObject({ location: '2dsphere' });
     });
@@ -1564,7 +1557,7 @@ describe('typed-mongo Integration Tests', () => {
           {
             key: { email: 1 },
             unique: true,
-            partialFilterExpression: { email: { $exists: true } }
+            partialFilterExpression: { email: { $exists: true } },
           },
         ],
       });
@@ -1573,11 +1566,11 @@ describe('typed-mongo Integration Tests', () => {
       expect(result.created).toHaveLength(1);
 
       const indexes = await User.getCollection().listIndexes().toArray();
-      const partialIndex = indexes.find(idx => idx.name === 'email_1');
+      const partialIndex = indexes.find((idx) => idx.name === 'email_1');
       expect(partialIndex).toBeDefined();
       expect(partialIndex?.unique).toBe(true);
       expect(partialIndex?.partialFilterExpression).toEqual({
-        email: { $exists: true }
+        email: { $exists: true },
       });
     });
 
@@ -1586,7 +1579,7 @@ describe('typed-mongo Integration Tests', () => {
         indexes: [
           {
             key: { 'metadata.created': 1 },
-            expireAfterSeconds: 3600
+            expireAfterSeconds: 3600,
           },
         ],
       });
@@ -1595,7 +1588,7 @@ describe('typed-mongo Integration Tests', () => {
       expect(result.created).toHaveLength(1);
 
       const indexes = await User.getCollection().listIndexes().toArray();
-      const ttlIndex = indexes.find(idx => idx.name === 'metadata.created_1');
+      const ttlIndex = indexes.find((idx) => idx.name === 'metadata.created_1');
       expect(ttlIndex).toBeDefined();
       expect(ttlIndex?.expireAfterSeconds).toBe(3600);
     });
@@ -1605,7 +1598,7 @@ describe('typed-mongo Integration Tests', () => {
         indexes: [
           {
             key: { email: 1 },
-            sparse: true
+            sparse: true,
           },
         ],
       });
@@ -1614,7 +1607,7 @@ describe('typed-mongo Integration Tests', () => {
       expect(result.created).toHaveLength(1);
 
       const indexes = await User.getCollection().listIndexes().toArray();
-      const sparseIndex = indexes.find(idx => idx.name === 'email_1');
+      const sparseIndex = indexes.find((idx) => idx.name === 'email_1');
       expect(sparseIndex).toBeDefined();
       expect(sparseIndex?.sparse).toBe(true);
     });
@@ -1624,7 +1617,7 @@ describe('typed-mongo Integration Tests', () => {
         indexes: [
           {
             key: { name: 1, age: 1 },
-            name: 'custom_name_age_index'
+            name: 'custom_name_age_index',
           },
         ],
       });
@@ -1633,7 +1626,7 @@ describe('typed-mongo Integration Tests', () => {
       expect(result.created).toHaveLength(1);
 
       const indexes = await User.getCollection().listIndexes().toArray();
-      const customIndex = indexes.find(idx => idx.name === 'custom_name_age_index');
+      const customIndex = indexes.find((idx) => idx.name === 'custom_name_age_index');
       expect(customIndex).toBeDefined();
       expect(customIndex?.key).toMatchObject({ name: 1, age: 1 });
     });
@@ -1643,7 +1636,7 @@ describe('typed-mongo Integration Tests', () => {
         indexes: [
           {
             key: { name: 1 },
-            collation: { locale: 'en', strength: 2 }
+            collation: { locale: 'en', strength: 2 },
           },
         ],
       });
@@ -1652,11 +1645,11 @@ describe('typed-mongo Integration Tests', () => {
       expect(result.created).toHaveLength(1);
 
       const indexes = await User.getCollection().listIndexes().toArray();
-      const collationIndex = indexes.find(idx => idx.name === 'name_1');
+      const collationIndex = indexes.find((idx) => idx.name === 'name_1');
       expect(collationIndex).toBeDefined();
       expect(collationIndex?.collation).toMatchObject({
         locale: 'en',
-        strength: 2
+        strength: 2,
       });
     });
 
@@ -1665,7 +1658,7 @@ describe('typed-mongo Integration Tests', () => {
         indexes: [
           {
             key: { name: 1 },
-            background: true
+            background: true,
           },
         ],
       });
@@ -1674,7 +1667,7 @@ describe('typed-mongo Integration Tests', () => {
       expect(result.created).toHaveLength(1);
 
       const indexes = await User.getCollection().listIndexes().toArray();
-      const bgIndex = indexes.find(idx => idx.name === 'name_1');
+      const bgIndex = indexes.find((idx) => idx.name === 'name_1');
       expect(bgIndex).toBeDefined();
       // Note: background option might not be reflected in listIndexes output
       // but the index should be created successfully
@@ -1682,15 +1675,13 @@ describe('typed-mongo Integration Tests', () => {
 
     test('should preserve _id index when syncing', async () => {
       const User = typedMongo.model<UserSchema>('users_preserve', {
-        indexes: [
-          { key: { name: 1 } },
-        ],
+        indexes: [{ key: { name: 1 } }],
       });
 
       await User.syncIndexes();
-      
+
       const indexes = await User.getCollection().listIndexes().toArray();
-      const idIndex = indexes.find(idx => idx.name === '_id_');
+      const idIndex = indexes.find((idx) => idx.name === '_id_');
       expect(idIndex).toBeDefined();
       expect(idIndex?.key).toMatchObject({ _id: 1 });
     });
@@ -1718,12 +1709,10 @@ describe('typed-mongo Integration Tests', () => {
     test('should handle index recreation when options change', async () => {
       // Create a fresh collection for this test
       const collectionName = `users_recreate_${Date.now()}`;
-      
+
       // Create initial index
       const User1 = typedMongo.model<UserSchema>(collectionName, {
-        indexes: [
-          { key: { email: 1 } },
-        ],
+        indexes: [{ key: { email: 1 } }],
       });
 
       const result1 = await User1.syncIndexes();
@@ -1731,14 +1720,12 @@ describe('typed-mongo Integration Tests', () => {
 
       // Verify initial index doesn't have unique
       const indexes1 = await User1.getCollection().listIndexes().toArray();
-      const emailIndex1 = indexes1.find(idx => idx.name === 'email_1');
+      const emailIndex1 = indexes1.find((idx) => idx.name === 'email_1');
       expect(emailIndex1?.unique).toBeUndefined();
 
       // Change index options (add unique) - this should drop and recreate
       const User2 = typedMongo.model<UserSchema>(collectionName, {
-        indexes: [
-          { key: { email: 1 }, unique: true },
-        ],
+        indexes: [{ key: { email: 1 }, unique: true }],
       });
 
       // should throw error because index already exists
@@ -1748,18 +1735,14 @@ describe('typed-mongo Integration Tests', () => {
     test('should handle multiple models with different indexes on same collection', async () => {
       // First model with one set of indexes
       const User1 = typedMongo.model<UserSchema>('shared_collection', {
-        indexes: [
-          { key: { name: 1 } },
-        ],
+        indexes: [{ key: { name: 1 } }],
       });
 
       await User1.syncIndexes();
 
       // Second model with different indexes on same collection
       const User2 = typedMongo.model<UserSchema>('shared_collection', {
-        indexes: [
-          { key: { age: 1 } },
-        ],
+        indexes: [{ key: { age: 1 } }],
       });
 
       const result = await User2.syncIndexes();
@@ -1768,38 +1751,34 @@ describe('typed-mongo Integration Tests', () => {
 
       const indexes = await User2.getCollection().listIndexes().toArray();
       expect(indexes).toHaveLength(2); // _id + age
-      expect(indexes.some(idx => idx.name === 'age_1')).toBe(true);
-      expect(indexes.some(idx => idx.name === 'name_1')).toBe(false);
+      expect(indexes.some((idx) => idx.name === 'age_1')).toBe(true);
+      expect(indexes.some((idx) => idx.name === 'name_1')).toBe(false);
     });
 
     test('should handle wildcard indexes', async () => {
       const User = typedMongo.model<UserSchema>('users_wildcard', {
-        indexes: [
-          { key: { '$**': 1 } },
-        ],
+        indexes: [{ key: { '$**': 1 } }],
       });
 
       const result = await User.syncIndexes();
       expect(result.created).toHaveLength(1);
 
       const indexes = await User.getCollection().listIndexes().toArray();
-      const wildcardIndex = indexes.find(idx => idx.name !== '_id_');
+      const wildcardIndex = indexes.find((idx) => idx.name !== '_id_');
       expect(wildcardIndex).toBeDefined();
       expect(wildcardIndex?.key).toMatchObject({ '$**': 1 });
     });
 
     test('should handle hashed indexes', async () => {
       const User = typedMongo.model<UserSchema>('users_hashed', {
-        indexes: [
-          { key: { _id: 'hashed' } },
-        ],
+        indexes: [{ key: { _id: 'hashed' } }],
       });
 
       const result = await User.syncIndexes();
       expect(result.created).toHaveLength(1);
 
       const indexes = await User.getCollection().listIndexes().toArray();
-      const hashedIndex = indexes.find(idx => idx.name === '_id_hashed');
+      const hashedIndex = indexes.find((idx) => idx.name === '_id_hashed');
       expect(hashedIndex).toBeDefined();
       expect(hashedIndex?.key).toMatchObject({ _id: 'hashed' });
     });
@@ -1819,9 +1798,7 @@ describe('typed-mongo Integration Tests', () => {
 
     test('should handle index sync errors gracefully', async () => {
       const User = typedMongo.model<UserSchema>('users_error', {
-        indexes: [
-          { key: { name: 1 }, unique: true },
-        ],
+        indexes: [{ key: { name: 1 }, unique: true }],
       });
 
       // Insert duplicate data
