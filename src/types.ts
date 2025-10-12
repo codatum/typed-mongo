@@ -320,7 +320,7 @@ export type MongoBulkWriteOperation<TSchema extends BaseSchema> =
  * Type-safe index description that ensures index keys are valid fields from the schema
  */
 export type MongoIndexDescription<TSchema extends BaseSchema> = Omit<IndexDescription, 'key'> & {
-  key: Partial<Record<keyof MongoAllProperties<TSchema> | '$**' | '_fts' | '_id', IndexDirection>>;
+  key: Partial<Record<keyof MongoAllProperties<TSchema> | '$**', IndexDirection>>;
 };
 
 // ============================================================================
