@@ -45,7 +45,6 @@ export type ModelOptions<TSchema extends BaseSchema> = {
 };
 
 export type SyncIndexesOptions = {
-  // TODO: recreateModified?: boolean;
   dropObsolete?: boolean;
   mongoCreateIndexesOptions?: CreateIndexesOptions;
 };
