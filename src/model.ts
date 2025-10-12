@@ -33,14 +33,15 @@ import type {
   BaseSchema,
   MongoBulkWriteOperation,
   MongoFilter,
+  MongoIndexDescription,
   MongoUpdateFilter,
   Projection,
   ProjectionType,
   StrictOptionalId,
 } from './types.js';
 
-export type ModelOptions = {
-  indexes?: IndexDescription[];
+export type ModelOptions<TSchema extends BaseSchema> = {
+  indexes?: MongoIndexDescription<TSchema>[];
 };
 
 export type SyncIndexesOptions = {
@@ -59,9 +60,9 @@ export type SyncIndexesResult = {
  */
 export class Model<TSchema extends BaseSchema> {
   private collection: Collection<TSchema>;
-  private indexes: IndexDescription[] | undefined;
+  private indexes: MongoIndexDescription<TSchema>[] | undefined;
 
-  constructor(db: Db, collectionName: string, options: ModelOptions = {}) {
+  constructor(db: Db, collectionName: string, options: ModelOptions<TSchema> = {}) {
     this.collection = db.collection<TSchema>(collectionName);
     this.indexes = options.indexes;
   }
@@ -106,7 +107,7 @@ export class Model<TSchema extends BaseSchema> {
     let newIndexNames: string[] = [];
     if (this.indexes.length > 0) {
       newIndexNames = await this.collection.createIndexes(
-        this.indexes,
+        this.indexes as IndexDescription[],
         options?.mongoCreateIndexesOptions,
       );
     }

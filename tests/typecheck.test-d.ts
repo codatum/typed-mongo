@@ -478,4 +478,13 @@ describe('Type checking tests', () => {
       expectTypeOf(aggregateResult2).toEqualTypeOf<{ _id: string; count: number }[]>();
     });
   });
+
+  describe('Index declaration', () => {
+    test('Check index declaration', async () => {
+      const _ = typedMongo.model<UserSchema>('users', {
+        // @ts-expect-error - non-existent field
+        indexes: [{ key: { nonExistentField: 1 } }],
+      });
+    });
+  });
 });
