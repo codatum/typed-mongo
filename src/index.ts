@@ -19,7 +19,7 @@ export class TypedMongo {
 
   model<TSchema extends BaseSchema>(
     collectionName: string,
-    options: ModelOptions = {},
+    options: ModelOptions<TSchema> = {},
   ): Model<TSchema> {
     const model = new Model<TSchema>(this.db, collectionName, options);
     this.models.set(collectionName, model);

@@ -1394,6 +1394,14 @@ describe('typed-mongo Integration Tests', () => {
   });
 
   describe('Index management', () => {
+    // delete all collections
+    beforeEach(async () => {
+      const collections = await testDbManager.getDb().listCollections().toArray();
+      for (const collection of collections) {
+        await testDbManager.getDb().collection(collection.name).drop();
+      }
+    });
+
     test('should sync indexes', async () => {
       const User = typedMongo.model<UserSchema>('users', {
         indexes: [
@@ -1444,8 +1452,8 @@ describe('typed-mongo Integration Tests', () => {
       const results = await typedMongo.syncIndexes({ dropObsolete: true });
       expect(results).toHaveLength(2);
       expect(results[0]?.collectionName).toBe('users');
-      expect(results[0]?.created).toHaveLength(0);
-      expect(results[0]?.dropped).toHaveLength(2);
+      expect(results[0]?.created).toHaveLength(1);
+      expect(results[0]?.dropped).toHaveLength(0);
       expect(results[1]?.collectionName).toBe('posts');
       expect(results[1]?.created).toHaveLength(0);
       expect(results[1]?.dropped).toHaveLength(0);
@@ -1454,10 +1462,6 @@ describe('typed-mongo Integration Tests', () => {
       expect(indexes).toHaveLength(2);
       expect(indexes[0]).toMatchObject({ name: '_id_', key: { _id: 1 } });
       expect(indexes[1]).toMatchObject({ name: 'name_1', key: { name: 1 } });
-
-      const indexes2 = await Post.getCollection().listIndexes().toArray();
-      expect(indexes2).toHaveLength(1);
-      expect(indexes2[0]).toMatchObject({ name: '_id_', key: { _id: 1 } });
 
       // Update indexes
       typedMongo.model<UserSchema>('users', {

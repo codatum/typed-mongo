@@ -478,4 +478,109 @@ describe('Type checking tests', () => {
       expectTypeOf(aggregateResult2).toEqualTypeOf<{ _id: string; count: number }[]>();
     });
   });
+
+  describe('Index declaration', () => {
+    test('Check index declaration with valid fields', async () => {
+      // These should all be valid
+      const model = typedMongo.model<UserSchema>('users', {
+        indexes: [
+          { key: { name: 1 } }, // Simple field
+          { key: { age: -1 } }, // Simple field with descending order
+          { key: { email: 1 }, unique: true }, // Optional field with unique constraint
+          { key: { 'profile.bio': 1 } }, // Nested field
+          { key: { 'profile.avatar': 1 } }, // Nested optional field
+          { key: { 'metadata.created': 1 } }, // Deep nested field
+          { key: { 'metadata.updated': -1 } }, // Deep nested optional field
+          { key: { name: 1, age: -1 } }, // Compound index
+          { key: { email: 1, 'profile.bio': 1 } }, // Compound index with nested field
+          { key: { tags: 1 } }, // Array field
+          { key: { scores: -1 } }, // Optional array field
+          { key: { counters: 1 } }, // Record field
+          { key: { '$**': 1 } }, // Wildcard index
+          { key: { name: 'text', 'profile.bio': 'text' } }, // Text index
+          { key: { age: 'hashed' } }, // Hashed index
+        ],
+      });
+
+      expectTypeOf(model).toEqualTypeOf<Model<UserSchema>>();
+    });
+
+    test('Check index declaration with non-existent field', async () => {
+      const _ = typedMongo.model<UserSchema>('users', {
+        // @ts-expect-error - non-existent field
+        indexes: [{ key: { nonExistentField: 1 } }],
+      });
+    });
+
+    test('Check index declaration with invalid nested fields', async () => {
+      typedMongo.model<UserSchema>('users', {
+        indexes: [
+          // @ts-expect-error - non-existent nested field
+          { key: { 'profile.nonExistent': 1 } },
+          // @ts-expect-error - non-existent deep nested field
+          { key: { 'metadata.nonExistent': 1 } },
+          // @ts-expect-error - non-existent nested field in optional object
+          { key: { 'settings.nonExistent': 1 } },
+        ],
+      });
+    });
+
+    test('Check index declaration with PostSchema', async () => {
+      // Valid indexes for PostSchema
+      const validPost = typedMongo.model<PostSchema>('posts', {
+        indexes: [
+          { key: { title: 1 } },
+          { key: { authorId: 1 } },
+          { key: { published: 1 } },
+          { key: { publishedAt: 1 } },
+          { key: { 'metadata.views': 1 } },
+          { key: { 'metadata.shares': -1 } },
+          { key: { tags: 1 } },
+          { key: { likes: -1 } },
+          { key: { title: 1, published: -1 } }, // Compound index
+        ],
+      });
+
+      expectTypeOf(validPost).toEqualTypeOf<Model<PostSchema>>();
+
+      // Invalid indexes for PostSchema
+      typedMongo.model<PostSchema>('posts', {
+        indexes: [
+          // @ts-expect-error - non-existent field
+          { key: { nonExistentField: 1 } },
+          // @ts-expect-error - non-existent nested field
+          { key: { 'metadata.nonExistent': 1 } },
+        ],
+      });
+    });
+
+    test('Check index options are preserved', async () => {
+      const model = typedMongo.model<UserSchema>('users', {
+        indexes: [
+          {
+            key: { email: 1 },
+            unique: true,
+            sparse: true,
+            background: true,
+            name: 'email_unique_sparse',
+          },
+          {
+            key: { 'metadata.created': 1 },
+            expireAfterSeconds: 3600, // TTL index
+          },
+          {
+            key: { name: 1 },
+            partialFilterExpression: { age: { $gte: 18 } },
+          },
+          {
+            key: { 'profile.bio': 'text' },
+            weights: { 'profile.bio': 10 },
+            default_language: 'english',
+          },
+        ],
+      });
+
+      expectTypeOf(model).toEqualTypeOf<Model<UserSchema>>();
+    });
+  });
 });
