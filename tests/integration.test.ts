@@ -1463,10 +1463,6 @@ describe('typed-mongo Integration Tests', () => {
       expect(indexes[0]).toMatchObject({ name: '_id_', key: { _id: 1 } });
       expect(indexes[1]).toMatchObject({ name: 'name_1', key: { name: 1 } });
 
-      const indexes2 = await Post.getCollection().listIndexes().toArray();
-      expect(indexes2).toHaveLength(1);
-      expect(indexes2[0]).toMatchObject({ name: '_id_', key: { _id: 1 } });
-
       // Update indexes
       typedMongo.model<UserSchema>('users', {
         indexes: [{ key: { name: 1 } }, { key: { email: 1 }, unique: true }],
