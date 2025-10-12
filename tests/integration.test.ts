@@ -1394,6 +1394,14 @@ describe('typed-mongo Integration Tests', () => {
   });
 
   describe('Index management', () => {
+    // delete all collections
+    beforeEach(async () => {
+      const collections = await testDbManager.getDb().listCollections().toArray();
+      for (const collection of collections) {
+        await testDbManager.getDb().collection(collection.name).drop();
+      }
+    });
+
     test('should sync indexes', async () => {
       const User = typedMongo.model<UserSchema>('users', {
         indexes: [
@@ -1444,8 +1452,8 @@ describe('typed-mongo Integration Tests', () => {
       const results = await typedMongo.syncIndexes({ dropObsolete: true });
       expect(results).toHaveLength(2);
       expect(results[0]?.collectionName).toBe('users');
-      expect(results[0]?.created).toHaveLength(0);
-      expect(results[0]?.dropped).toHaveLength(2);
+      expect(results[0]?.created).toHaveLength(1);
+      expect(results[0]?.dropped).toHaveLength(0);
       expect(results[1]?.collectionName).toBe('posts');
       expect(results[1]?.created).toHaveLength(0);
       expect(results[1]?.dropped).toHaveLength(0);
