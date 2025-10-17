@@ -118,6 +118,31 @@ await User.syncIndexes();
 await typedMongo.syncIndexes({ dropObsolete: true });
 ```
 
+## Why Choose typed-mongo?
+
+### vs Mongoose
+- ✅ Better performance
+- ✅ Superior type inference
+  - ✅ Type inference for projection results
+  - ✅ Type inference for update operations
+- ✅ Smaller bundle size
+- ✅ No duplicate schema definitions
+
+### vs Native MongoDB Driver
+- ✅ Full type safety
+  - ✅ Type inference for nested paths
+  - ✅ Type inference for projection results
+  - ✅ Type inference for _id
+- ✅ Declarative index creation with type safety
+
+## Performance
+
+typed-mongo is designed as a thin wrapper around the MongoDB native driver, providing superior performance compared to heavy ORMs like Mongoose:
+
+- **Minimal overhead**: No unnecessary abstraction layers
+- **Native MongoDB performance**: Near-native driver speed
+- **Memory efficient**: No additional schema validation or middleware overhead
+
 ## API Reference
 
 ### TypedMongo
@@ -156,28 +181,6 @@ Models provide the following methods:
 - `bulkWrite(operations, options?)` - Bulk write operations
 - `syncIndexes(options?)` - Synchronize indexes for this model
 - `getCollection()` - Get the underlying MongoDB collection
-
-## Performance
-
-typed-mongo is designed as a thin wrapper around the MongoDB native driver, providing superior performance compared to heavy ORMs like Mongoose:
-
-- **Minimal overhead**: No unnecessary abstraction layers
-- **Native MongoDB performance**: Near-native driver speed
-- **Memory efficient**: No additional schema validation or middleware overhead
-
-## Why Choose typed-mongo?
-
-### vs Mongoose
-- ✅ Better performance
-- ✅ Superior type inference
-- ✅ Smaller bundle size
-- ✅ No duplicate schema definitions
-
-### vs Native MongoDB Driver
-- ✅ Full type safety
-- ✅ Better developer experience
-- ✅ Early type error detection
-- ✅ IDE autocomplete support
 
 ## Trusted by
 
