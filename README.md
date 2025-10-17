@@ -121,15 +121,14 @@ await typedMongo.syncIndexes({ dropObsolete: true });
 ## Why Choose typed-mongo?
 
 ### vs Mongoose
-- ✅ Better performance
 - ✅ Superior type inference
   - ✅ Type inference for projection results
   - ✅ Type inference for update operations
-- ✅ Smaller bundle size
-- ✅ No duplicate schema definitions
+- ✅ Better performance
+- ✅ No library-specific schema definitions needed
 
 ### vs Native MongoDB Driver
-- ✅ Full type safety
+- ✅ Superior type inference
   - ✅ Type inference for nested paths
   - ✅ Type inference for projection results
   - ✅ Type inference for _id
